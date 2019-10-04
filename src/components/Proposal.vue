@@ -43,10 +43,25 @@
           >
             Submit
           </v-btn>
-
           <v-btn color="error" class="mr-4" @click="reset">
             Reset Form
           </v-btn>
+        </v-col>
+        <v-col>
+          <v-list>
+            <v-list-item
+              v-for="proposal in proposals"
+              :key="proposal.id"
+              @click=""
+            >
+              <v-list-item-content>
+                <v-list-item-title v-html="proposal.title"></v-list-item-title>
+                <v-list-item-subtitle class="text--primary" v-text="proposal.name"></v-list-item-subtitle>
+                <v-list-item-subtitle v-html="proposal.mail"></v-list-item-subtitle>
+                <v-list-item-subtitle class="font-weight-light" v-html="proposal.description"></v-list-item-subtitle>
+            </v-list-item-content>
+            </v-list-item>
+          </v-list>
         </v-col>
       </v-row>
     </v-container>
@@ -55,7 +70,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { db } from '../db'
+import { db } from '../firebase'
 var proposals_db = db.collection('proposals')
 
 export default Vue.extend({
@@ -94,6 +109,7 @@ export default Vue.extend({
       if (this.$refs.form.validate()) {
         //console.log("Submit:" + this.proposal);
         proposals_db.add(this.proposal)
+        this.reset()
       }
     },
     reset() {
