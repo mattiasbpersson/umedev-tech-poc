@@ -52,7 +52,7 @@
             <v-list-item
               v-for="proposal in proposals"
               :key="proposal.id"
-              @click=""
+              @click="sendEmail"
             >
               <v-list-item-content>
                 <v-list-item-title v-html="proposal.title"></v-list-item-title>
@@ -71,7 +71,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { db } from '../firebase'
-var proposals_db = db.collection('proposals')
+var proposals_db = db.ref('proposals')
 
 export default Vue.extend({
   data: () => ({
@@ -101,19 +101,22 @@ export default Vue.extend({
         "Description must be less than 1000 characters"
     ],
   }),
-  firestore: {
+  firebase: {
     proposals: proposals_db,
   },
   methods: {
     submit() {
       if (this.$refs.form.validate()) {
         //console.log("Submit:" + this.proposal);
-        proposals_db.add(this.proposal)
+        proposals_db.push(this.proposal)
         this.reset()
       }
     },
     reset() {
       this.$refs.form.reset();
+    },
+    sendEmail() {
+      //console.log("Submit:" + this.proposal);
     }
   }
 });
