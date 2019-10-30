@@ -27,3 +27,9 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+https://github.com/firebase/functions-samples/tree/master/email-confirmation
+firebase functions:config:set gmail.email="myusername@gmail.com" gmail.password="secretpassword"
+
+https://stackoverflow.com/questions/26948516/nodemailer-invalid-login
+
