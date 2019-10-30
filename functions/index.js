@@ -35,41 +35,74 @@ const mailTransport = nodemailer.createTransport(smtpTransport({
   }
 }));
 
-// Sends an email confirmation when a user changes his mailing list subscription.
-exports.sendEmailConfirmation = functions.database.ref('/proposals').onWrite(async (change) => {
-  const snapshot = change.after;
-  const val = snapshot.val();
+// Sends an email confirmation when a user submits a proposal.
+exports.sendEmailConfirmation = functions.database.ref('/proposals/{proposal}').onCreate(async (change, context) => {
+  console.log(context.params.proposal);
+  console.log(change);
 
-  console.log(snapshot);
+  const val = change.val();
+  const key = change.key;
+
+
   console.log(val);
-
-  //if (!snapshot.changed('subscribedToMailingList')) {
-  //  return null;
-  //}
+  console.log(key);
 
   const mailOptions = {
     from: gmailEmail,
-    //to: val.email,
-    to: 'mattiasbpersson@gmail.com',
+    to: val.mail,
+    bcc: gmailEmail
   };
 
-  //const subscribed = val.subscribedToMailingList;
-  const subscribed = true;
-
   // Building Email message.
-  mailOptions.subject = subscribed ? 'Thanks and Welcome!' : 'Sad to see you go :`(';
-  mailOptions.text = subscribed ?
-      'Thanks you for subscribing to our newsletter. You will receive our next weekly newsletter.' :
-      'I hereby confirm that I will stop sending you the newsletter.';
+  mailOptions.subject = 'Proposal "' + val.title + '" has been recieved';
+  mailOptions.text = 'We will get back to you with an approval or denial of your proposal. If you need to change or refer your proposal, please use the following id: ' + key;
   
   try {
     console.log(mailTransport);
     console.log(mailOptions);
     await mailTransport.sendMail(mailOptions);
-    //console.log(`New ${subscribed ? '' : 'un'}subscription confirmation email sent to:`, val.email);
-    console.log(`New ${subscribed ? '' : 'un'}subscription confirmation email sent to:`, 'mattiasbpersson@gmail.com');
+    console.log(`New proposal confirmation email sent to:`, val.mail);
   } catch(error) {
     console.error('There was an error while sending the email:', error);
   }
+  return null;
+});
+
+// Sends an email notification when a proposal has been approved.
+exports.sendEmailApproval = functions.database.ref('/proposals/{proposal}').onWrite(async (change, context) => {
+  console.log(context.params.proposal);
+  const snapshot = change.after;
+  console.log(snapshot);
+
+  const val = snapshot.val();
+  const key = snapshot.key;
+
+  console.log(val);
+  console.log(key);
+
+  const mailOptions = {
+    from: gmailEmail,
+    to: val.mail,
+    bcc: gmailEmail
+  };
+
+  if (!val.approved) {
+    console.log("Proposal updated but not approved: " + key);
+    return null;
+  }
+
+  // Building Email message.
+  mailOptions.subject = 'Proposal "' + val.title + '" has been approved!';
+  mailOptions.text = 'We will get back to you on a later date with more specific information. If you need to change or refer your proposal, please use the following id: ' + key;
+  
+  try {
+    console.log(mailTransport);
+    console.log(mailOptions);
+    await mailTransport.sendMail(mailOptions);
+    console.log(`New proposal approval email sent to:`, val.mail);
+  } catch(error) {
+    console.error('There was an error while sending the email:', error);
+  }
+
   return null;
 });
